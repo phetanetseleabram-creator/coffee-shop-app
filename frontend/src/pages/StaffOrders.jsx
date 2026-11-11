@@ -8,7 +8,6 @@ export default function StaffOrders() {
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState('');
 
-  // Load orders and auto-refresh every 8 seconds
   const reload = () => getOrders(key).then(setOrders).catch((e) => setError(e.message));
   
   useEffect(() => {
@@ -26,7 +25,6 @@ export default function StaffOrders() {
     }
   };
 
-  // Calculate daily summary
   const today = new Date().toDateString();
   const todays = orders.filter((o) => new Date(o.createdAt).toDateString() === today);
   const summary = STATUSES.reduce((acc, s) => ({ ...acc, [s]: todays.filter((o) => o.status === s).length }), {});
@@ -34,38 +32,53 @@ export default function StaffOrders() {
 
   return (
     <div>
-      <h2>Orders</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
       
-      <div style={{ background: '#f5f5f5', padding: 12, borderRadius: 6, marginBottom: 20 }}>
-        <strong>Today:</strong> {todays.length} orders · ${revenue.toFixed(2)} revenue ·{' '}
-        {STATUSES.map((s) => `${s}: ${summary[s]}`).join(' · ')}
+      <div className="card" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <strong style={{ fontSize: '1.2rem' }}>Today's Summary</strong>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)' }}>
+            {todays.length} orders · M{revenue.toFixed(2)} revenue
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {STATUSES.map((s) => (
+            <div key={s} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{summary[s]}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{s}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {orders.length === 0 && <p>No orders yet.</p>}
       
       {orders.map((o) => (
-        <div key={o.id} style={{ border: '1px solid #ddd', padding: 12, marginBottom: 10, borderRadius: 6 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div key={o.id} className="card" style={{ marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '12px' }}>
             <div>
-              <strong>{o.orderNumber}</strong> — {o.customerName} — <em style={{ color: o.status === 'Pending' ? 'orange' : 'green' }}>{o.status}</em>
+              <strong style={{ fontSize: '1.1rem' }}>{o.orderNumber}</strong> 
+              <span style={{ margin: '0 8px', color: 'var(--text-muted)' }}>|</span> 
+              {o.customerName}
             </div>
-            <div><strong>${o.total.toFixed(2)}</strong></div>
+            <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>M{o.total.toFixed(2)}</div>
           </div>
           
-          <ul style={{ margin: '10px 0' }}>
+          <ul style={{ margin: '0 0 12px 0', paddingLeft: '20px', color: 'var(--text-muted)' }}>
             {o.items.map((l) => <li key={l.menuItemId}>{l.qty} × {l.name}</li>)}
           </ul>
           
-          {o.notes && <p><em>Notes: {o.notes}</em></p>}
+          {o.notes && <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}><em>Notes: {o.notes}</em></p>}
           
-          <div style={{ marginTop: 10 }}>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '16px', alignItems: 'center' }}>
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>Status:</span>
             {STATUSES.map((s) => (
               <button 
                 key={s} 
                 onClick={() => setStatus(o.id, s)} 
                 disabled={o.status === s} 
-                style={{ marginRight: 6, backgroundColor: o.status === s ? '#ddd' : '#fff' }}
+                className={o.status === s ? "primary" : ""}
+                style={{ fontSize: '12px', padding: '6px 12px' }}
               >
                 {s}
               </button>

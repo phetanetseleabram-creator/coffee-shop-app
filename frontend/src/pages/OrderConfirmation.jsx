@@ -8,28 +8,60 @@ export default function OrderConfirmation() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const load = () =>
-      getOrder(id).then(setOrder).catch((e) => setError(e.message));
+    let isMounted = true;
+    
+    const load = () => {
+      // Delay the first fetch by 500ms to give the database time to save
+      setTimeout(() => {
+        getOrder(id)
+          .then((data) => { if (isMounted) setOrder(data); })
+          .catch((e) => { if (isMounted) setError(e.message); });
+      }, 500);
+    };
+    
     load();
-    const t = setInterval(load, 5000); // poll for status updates
-    return () => clearInterval(t);
+    
+    // Keep checking for status updates every 5 seconds
+    const t = setInterval(load, 5000); 
+    
+    return () => { 
+      isMounted = false; 
+      clearInterval(t); 
+    };
   }, [id]);
 
-  if (error) return <p style={{ padding: 20, color: 'red' }}>{error}</p>;
-  if (!order) return <p style={{ padding: 20 }}>Loading…</p>;
+  if (error) return <p className="container" style={{ color: 'var(--danger)' }}>{error}</p>;
+  if (!order) return <p className="container">Loading…</p>;
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: 20 }}>
-      <h1>✅ Order Confirmed</h1>
-      <p>Order number: <strong>{order.orderNumber}</strong></p>
-      <p>Status: <strong>{order.status}</strong></p>
-      <ul>
-        {order.items.map((l) => (
-          <li key={l.menuItemId}>{l.qty} × {l.name} — ${l.lineTotal.toFixed(2)}</li>
-        ))}
-      </ul>
-      <h3>Total: ${order.total.toFixed(2)}</h3>
-      <a href="/">← Back to menu</a>
+    <div className="container">
+      <div className="card" style={{ maxWidth: '600px', margin: '40px auto', textAlign: 'center' }}>
+        <h1 style={{ color: 'var(--success)', fontSize: '3rem', margin: '0 0 10px 0' }}>✅</h1>
+        <h2>Order Confirmed</h2>
+        <p style={{ fontSize: '1.1rem' }}>Order number: <strong>{order.orderNumber}</strong></p>
+        
+        <div style={{ margin: '20px 0', padding: '10px', background: 'var(--bg)', borderRadius: '8px' }}>
+          Status: <strong style={{ color: 'var(--primary)' }}>{order.status}</strong>
+        </div>
+
+        <ul style={{ listStyle: 'none', padding: 0, margin: '20px 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+          {order.items.map((l) => (
+            <li key={l.menuItemId} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+              <span>{l.qty} × {l.name}</span>
+              <span>M{l.lineTotal.toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 'bold' }}>
+          <span>Total:</span>
+          <span>M{order.total.toFixed(2)}</span>
+        </div>
+
+        <a href="/" className="primary" style={{ display: 'inline-block', marginTop: '30px', padding: '10px 20px', background: 'var(--primary)', color: 'white', borderRadius: '6px', textDecoration: 'none' }}>
+          Back to Menu
+        </a>
+      </div>
     </div>
   );
 }

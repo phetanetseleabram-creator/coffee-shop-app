@@ -39,73 +39,76 @@ export default function MenuPage() {
     if (!customerName.trim()) return setError('Please enter your name');
     const items = Object.entries(cart).map(([menuItemId, qty]) => ({ menuItemId, qty }));
     if (!items.length) return setError('Cart is empty');
+    
     setSubmitting(true);
     try {
       const order = await placeOrder({ customerName, items, notes });
-      navigate(`/order/${order.id}`);
+      // Wait a fraction of a second to ensure the DB saves it before redirecting
+      setTimeout(() => {
+        navigate(`/order/${order.id}`);
+      }, 500);
     } catch (e) {
       setError(e.message);
-    } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <p style={{ padding: 20 }}>Loading menu…</p>;
+  if (loading) return <p className="container">Loading menu…</p>;
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>
-      <h1>☕ Bean & Brew</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
-        <div>
+    <div className="container">
+      <h1 style={{ textAlign: 'center', fontSize: '2.5rem', marginBottom: '40px' }}>☕ Bean & Brew</h1>
+      
+      {error && <p style={{ color: 'var(--danger)', textAlign: 'center' }}>{error}</p>}
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '30px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gap: '16px' }}>
           {menu.map((item) => (
-            <div key={item.id} style={{ border: '1px solid #ddd', padding: 12, marginBottom: 10, borderRadius: 6 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div>
-                  <strong>{item.name}</strong> <em>({item.category})</em>
-                  <p style={{ margin: '4px 0', color: '#555' }}>{item.description}</p>
-                  <p style={{ margin: 0 }}>${item.price.toFixed(2)} {!item.available && <span style={{ color: 'red' }}>— Unavailable</span>}</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div>
-                    <button onClick={() => remove(item.id)} disabled={!cart[item.id]}>−</button>
-                    <span style={{ margin: '0 8px' }}>{cart[item.id] || 0}</span>
-                    <button onClick={() => add(item.id)} disabled={!item.available}>+</button>
-                  </div>
-                </div>
+            <div key={item.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px 0' }}>
+                  {item.name} <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>({item.category})</span>
+                </h3>
+                <p style={{ margin: '0 0 8px 0', color: 'var(--text-muted)', fontSize: '14px' }}>{item.description}</p>
+                <strong style={{ color: 'var(--primary)' }}>M{item.price.toFixed(2)}</strong>
+                {!item.available && <span style={{ marginLeft: '10px', color: 'var(--danger)', fontSize: '14px' }}>Unavailable</span>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button onClick={() => remove(item.id)} disabled={!cart[item.id]}>−</button>
+                <span style={{ fontWeight: '600', width: '20px', textAlign: 'center' }}>{cart[item.id] || 0}</span>
+                <button onClick={() => add(item.id)} disabled={!item.available}>+</button>
               </div>
             </div>
           ))}
           {menu.length === 0 && <p>No menu items yet.</p>}
         </div>
-        <div style={{ border: '1px solid #ddd', padding: 12, borderRadius: 6, height: 'fit-content' }}>
-          <h3>Your Order</h3>
-          <div>
-            <input
-              placeholder="Your name"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              style={{ width: '100%', padding: 6, marginBottom: 8 }}
-            />
-            <textarea
-              placeholder="Notes (optional)"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              style={{ width: '100%', padding: 6, marginBottom: 8 }}
-            />
+
+        <div className="card" style={{ position: 'sticky', top: '20px' }}>
+          <h2 style={{ fontSize: '1.25rem' }}>Your Order</h2>
+          <div style={{ display: 'grid', gap: '12px', marginBottom: '20px' }}>
+            <input placeholder="Your name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+            <textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows="2" />
           </div>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
             {Object.entries(cart).map(([id, qty]) => {
               const m = menu.find((x) => x.id === id);
               if (!m) return null;
-              return <li key={id}>{qty} × {m.name} — ${(qty * m.price).toFixed(2)}</li>;
+              return (
+                <li key={id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <span>{qty} × {m.name}</span>
+                  <span>M{(qty * m.price).toFixed(2)}</span>
+                </li>
+              );
             })}
           </ul>
-          <h3>Total: ${total.toFixed(2)}</h3>
-          <button onClick={submit} disabled={submitting || total === 0} style={{ width: '100%', padding: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '1.2rem', fontWeight: '600' }}>
+            <span>Total:</span>
+            <span>M{total.toFixed(2)}</span>
+          </div>
+          <button className="primary" onClick={submit} disabled={submitting || total === 0} style={{ width: '100%', padding: '12px', fontSize: '16px' }}>
             {submitting ? 'Placing…' : 'Place Order'}
           </button>
-          <p style={{ marginTop: 12, fontSize: 12 }}>
+          <p style={{ marginTop: '20px', fontSize: '14px', textAlign: 'center' }}>
             <a href="/staff/login">Staff login →</a>
           </p>
         </div>

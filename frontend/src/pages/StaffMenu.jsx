@@ -60,49 +60,59 @@ export default function StaffMenu() {
   return (
     <div>
       <h2>Menu Management</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
       
-      <form onSubmit={add} style={{ marginBottom: 20, display: 'grid', gap: 8, maxWidth: 500, background: '#f9f9f9', padding: 15, borderRadius: 6 }}>
+      <div className="card" style={{ marginBottom: '24px' }}>
         <h3>Add New Item</h3>
-        <input placeholder="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-          <option value="coffee">Coffee</option>
-          <option value="tea">Tea</option>
-          <option value="pastry">Pastry</option>
-          <option value="other">Other</option>
-        </select>
-        <input placeholder="Price" type="number" step="0.01" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-        <label>
-          <input type="checkbox" checked={form.available} onChange={(e) => setForm({ ...form, available: e.target.checked })} /> 
-          Available to order
-        </label>
-        <button type="submit" style={{ padding: 10, backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: 4 }}>Add Item</button>
-      </form>
+        <form onSubmit={add} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <input placeholder="Name" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+            <option value="coffee">Coffee</option>
+            <option value="tea">Tea</option>
+            <option value="pastry">Pastry</option>
+            <option value="other">Other</option>
+          </select>
+          <input placeholder="Price" type="number" step="0.01" required value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+          
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: 'span 2' }}>
+            <input type="checkbox" checked={form.available} onChange={(e) => setForm({ ...form, available: e.target.checked })} style={{ width: 'auto' }} /> 
+            Available to order
+          </label>
+          
+          <button type="submit" className="primary" style={{ gridColumn: 'span 2', padding: '12px' }}>Add Item</button>
+        </form>
+      </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #333', textAlign: 'left' }}>
-            <th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {menu.map((item) => (
-            <tr key={item.id} style={{ borderBottom: '1px solid #ddd' }}>
-              <td>{item.name}</td>
-              <td style={{ textTransform: 'capitalize' }}>{item.category}</td>
-              <td>${item.price.toFixed(2)}</td>
-              <td>{item.available ? '✅ Yes' : '❌ No'}</td>
-              <td style={{ padding: '8px 0' }}>
-                <button onClick={() => updatePrice(item)} style={{ marginRight: 6 }}>Edit Price</button>
-                <button onClick={() => toggleAvail(item)} style={{ marginRight: 6 }}>{item.available ? 'Mark Unavailable' : 'Mark Available'}</button>
-                <button onClick={() => remove(item)} style={{ color: 'red' }}>Delete</button>
-              </td>
+      <div className="card">
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid var(--border)' }}>
+              <th style={{ padding: '12px 0' }}>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Available</th>
+              <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
-          ))}
-          {menu.length === 0 && <tr><td colSpan="5" style={{ padding: 10 }}>No menu items found.</td></tr>}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {menu.map((item) => (
+              <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '12px 0', fontWeight: '500' }}>{item.name}</td>
+                <td style={{ textTransform: 'capitalize', color: 'var(--text-muted)' }}>{item.category}</td>
+                <td>M{item.price.toFixed(2)}</td>
+                <td>{item.available ? '✅ Yes' : '❌ No'}</td>
+                <td style={{ textAlign: 'right', padding: '12px 0' }}>
+                  <button onClick={() => updatePrice(item)} style={{ marginRight: '8px' }}>Edit Price</button>
+                  <button onClick={() => toggleAvail(item)} style={{ marginRight: '8px' }}>{item.available ? 'Mark Unavailable' : 'Mark Available'}</button>
+                  <button onClick={() => remove(item)} className="danger">Delete</button>
+                </td>
+              </tr>
+            ))}
+            {menu.length === 0 && <tr><td colSpan="5" style={{ padding: '20px 0', textAlign: 'center' }}>No menu items found.</td></tr>}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
